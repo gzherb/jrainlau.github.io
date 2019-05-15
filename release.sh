@@ -7,5 +7,5 @@ git checkout master
 cp -rf ./dist/* ./
 
 git add .
-git commit -m "build"
+git commit -m "new release"
 git push
