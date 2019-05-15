@@ -3,7 +3,7 @@ import Vuex from 'vuex'
 import axios from 'axios'
 
 const API_DOMAIN = 'https://api.github.com'
-const REPO_URL = `${API_DOMAIN}/repos/jrainlau/my-blog`
+const REPO_URL = `${API_DOMAIN}/repos/jrainlau/jrainlau.github.io`
 
 const $fetch = ({ url, method = 'get', data, headers = {} }) => {
   return axios({
