@@ -63,7 +63,7 @@ export default new Vuex.Store({
       }).catch(e => e)
       if (status < 400) {
         const articles = data.map(issue => {
-          const cover = issue.body.match(/!\[.+?\]\((.+?\.(?:png|jpg|gif|jpeg)[^)]*)\)/)
+          const cover = issue.body.match(/!\[.+?\]\((.+?[^)]*)\)/)
 
           const article = {
             title: issue.title,
