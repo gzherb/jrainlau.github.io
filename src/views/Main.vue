@@ -6,6 +6,7 @@
       <About />
     </section>
     <div class="main-articles">
+      <Skeleton type="preview" v-if="!articlesList.length" />
       <div class="main-articles-keyword border" v-show="keyword">
         <i class="far fa-times-circle cancel" @click="UPDATE_KEYWORD('')"></i>
         <div class="keyword">
@@ -38,9 +39,10 @@ import Preview from '@/components/Preview'
 import Timeline from '@/components/Timeline'
 import Labels from '@/components/Labels'
 import About from '@/components/About'
+import Skeleton from '@/components/Skeleton'
 
 export default {
-  components: { Preview, Timeline, Labels, About },
+  components: { Preview, Timeline, Labels, About, Skeleton },
   data () {
     return {
       labelFilterKeyword: ''

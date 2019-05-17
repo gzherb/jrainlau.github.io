@@ -1,5 +1,6 @@
 <template>
   <div class="view">
+    <Skeleton type="article" v-if="!article" />
     <div class="article" v-if="article">
       <section class="article-title">
         <h1>{{article.title}}</h1>
@@ -40,6 +41,7 @@ import marked from 'marked'
 import hljs from 'highlight.js'
 import Comments from '@/components/Comments'
 import About from '@/components/About'
+import Skeleton from '@/components/Skeleton'
 import swal from 'sweetalert2'
 
 const renderer = new marked.Renderer()
@@ -57,7 +59,7 @@ marked.setOptions({
 })
 
 export default {
-  components: { Comments, About },
+  components: { Comments, About, Skeleton },
   filters: {
     markify (str) {
       return marked(str, { renderer })
