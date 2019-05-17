@@ -1,17 +1,19 @@
 <template>
-  <div class="article" v-if="article">
-    <section class="article-title">
-      <h1>{{article.title}}</h1>
-      <div>
-        <i class="fas fa-feather-alt"></i>
-        <span>{{article.date}}</span>
-        <span v-for="(label, i) in article.labels" :key="i" class="label" :style="`background: #${label.color}`">{{label.name}}</span>
-      </div>
-    </section>
-    <section class="article-content markdown" v-html="$options.filters.markify(article.content)"></section>
-    <section class="article-comments">
-      <Comments :article="article" :userInfo="userInfo" />
-    </section>
+  <div class="view">
+    <div class="article" v-if="article">
+      <section class="article-title">
+        <h1>{{article.title}}</h1>
+        <div>
+          <i class="fas fa-feather-alt"></i>
+          <span>{{article.date}}</span>
+          <span v-for="(label, i) in article.labels" :key="i" class="label" :style="`background: #${label.color}`">{{label.name}}</span>
+        </div>
+      </section>
+      <section class="article-content markdown" v-html="$options.filters.markify(article.content)"></section>
+      <section class="article-comments">
+        <Comments :article="article" :userInfo="userInfo" />
+      </section>
+    </div>
   </div>
 </template>
 
@@ -68,38 +70,41 @@ export default {
 }
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
+@import '../assets/style/variables.less';
+
 .article {
-  width: 700px;
+  width: 100%;
+  max-width: 935px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 75px 15px 15px 15px;
+  padding: calc(@gapOuter * 3) 0 @gapOuter 0;
   box-sizing: border-box;
+  background: #fff;
   &-title {
-    margin-bottom: 15px;
+    margin-bottom: @gapOuter;
     width: 100%;
     h1 {
       font-size: 2.5rem;
       border: none;
       margin-top: 0;
-      margin-bottom: 15px;
+      margin-bottom: @gapOuter;
     }
     div {
       font-size: 1.2rem;
       margin: 0;
-      color: #909399;
+      color: @monorFontColor;
       i {
-        margin-right: 10px;
+        margin-right: @gapInner;
       }
     }
     .label {
       font-size: 1rem;
       padding: 2px 8px;
-      color: #303133;
-      border-radius: 4px;
-      margin-left: 10px;
+      border-radius: @borderRadius;
+      margin-left: @gapInner;
       color: #fff;
     }
   }
@@ -114,7 +119,7 @@ export default {
 
 @media only screen and (max-width: 450px) {
   .article {
-    width: 100%;
+    padding: calc(@gapOuter * 3) @gapOuter @gapOuter @gapOuter;
     &-content {
       font-size: 1.2rem;
     }

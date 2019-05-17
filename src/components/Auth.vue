@@ -50,7 +50,7 @@ export default {
     ...mapActions(['getUserInfo']),
     hideAuth (e) {
       if (e.target.classList.contains('mask')) {
-        // this.$emit('update:showAuth', false)
+        this.$emit('update:showAuth', false)
       }
     },
     pageJump () {

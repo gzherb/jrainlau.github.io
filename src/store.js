@@ -32,7 +32,44 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     articles: [],
-    userInfo: {}
+    userInfo: {},
+    keyword: ''
+  },
+  getters: {
+    timeline ({ articles }) {
+      const tl = {}
+      articles.forEach(article => {
+        const date = article.date.replace(/-\d{2}$/, '')
+        if (!tl[date]) {
+          tl[date] = []
+        }
+        tl[date].push(article)
+      })
+      return tl
+    },
+    labels ({ articles }) {
+      const lb = {}
+      articles.forEach(article => {
+        article.labels.forEach(label => {
+          if (!lb[label.name]) {
+            lb[label.name] = {}
+          }
+          lb[label.name] = {
+            color: label.color,
+            name: label.name
+          }
+        })
+      })
+      return lb
+    },
+    articles ({ articles, keyword }) {
+      let list = articles
+      if (keyword) {
+        const regx = new RegExp(keyword, 'i')
+        list = articles.filter(article => regx.test(article.title))
+      }
+      return list
+    }
   },
   mutations: {
     GET_ARTICLES (state, articles) {
@@ -48,12 +85,8 @@ export default new Vuex.Store({
         }
       })
     },
-    UPDATE_COMMENT (state, { number, comments }) {
-      state.articles.forEach(article => {
-        if (article.number === number) {
-          article.comments = comments
-        }
-      })
+    UPDATE_KEYWORD (state, keyword) {
+      state.keyword = keyword
     }
   },
   actions: {

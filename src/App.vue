@@ -1,6 +1,10 @@
 <template>
   <div id="app">
-    <Header @showAbout="showAbout = true" />
+    <Header
+      :userInfo="userInfo"
+      :showAuth.sync="showAuth"
+      @signout="signout"
+      @search="search" />
     <main>
       <router-view></router-view>
     </main>
@@ -13,7 +17,7 @@
 import Header from '@/components/Header'
 import About from '@/components/About'
 import Auth from '@/components/Auth'
-import { mapActions } from 'vuex'
+import { mapState, mapActions, mapMutations } from 'vuex'
 import swal from 'sweetalert2'
 
 export default {
@@ -22,6 +26,9 @@ export default {
       showAbout: false,
       showAuth: false
     }
+  },
+  computed: {
+    ...mapState(['userInfo'])
   },
   components: {
     Header,
@@ -48,7 +55,16 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['getArticles', 'getUserInfo'])
+    ...mapActions(['getArticles', 'getUserInfo']),
+    ...mapMutations(['GET_USER_INFO', 'UPDATE_KEYWORD']),
+    signout () {
+      localStorage.removeItem('github_token')
+      this['GET_USER_INFO']({})
+    },
+    search (keyword) {
+      this.$router.push('/')
+      this['UPDATE_KEYWORD'](keyword)
+    }
   }
 }
 </script>
@@ -56,10 +72,11 @@ export default {
 <style lang="less">
 #app {
   width: 100%;
+  height: 100%;
   position: relative;
   main {
     width: 100%;
-    position: relative;
+    height: 100%;
   }
 }
 </style>

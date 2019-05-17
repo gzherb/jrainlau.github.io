@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Home from './views/Home.vue'
+import Main from './views/Main.vue'
 import Article from './views/Article.vue'
 
 Vue.use(Router)
@@ -9,20 +9,25 @@ const router = new Router({
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: Home
+      name: '',
+      component: Main
     },
     {
       path: '/article',
-      name: 'article',
+      name: 'Article',
       component: Article
     }
   ]
 })
 
-router.beforeEach((to, from, next) => {
-  window.scroll(0, 0)
-  next()
+router.afterEach((to, from) => {
+  const mainView = document.querySelector('main')
+  if (to.name) {
+    document.title = `JRAIN:BLOG | ${to.name}`
+  }
+  if (mainView) {
+    mainView.scroll(0, 0)
+  }
 })
 
 export default router

@@ -124,7 +124,6 @@ export default {
   },
   methods: {
     ...mapActions(['getUserInfo', 'getComments', 'createComment', 'deleteComment']),
-    ...mapMutations(['UPDATE_COMMENT']),
     pageJump () {
       window.open('https://github.com/settings/tokens/new')
     },
