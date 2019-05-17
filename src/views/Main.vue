@@ -28,7 +28,7 @@
         @like="likeArticle"
         @praise="praiseArticle"
         @toComment="toComment" />
-      <About class="mobile-only" />
+      <About style="padding:0 15px 15px 15px;" class="mobile-only" />
     </div>
   </div>
 </template>
