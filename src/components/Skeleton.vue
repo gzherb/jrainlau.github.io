@@ -6,10 +6,12 @@
       <p v-for="k in 20" :key="'p' + k"></p>
     </div>
 
-    <div class="skeleton-preview border" v-for="h in 4" :key="'preview' + h" v-if="type === 'preview'">
-      <div></div>
-      <span></span>
-      <p v-for="l in 2" :key="'p' + l"></p>
+    <div class="skeleton-preview" v-if="type === 'preview'">
+      <section class="border" v-for="h in 4" :key="'preview' + h">
+        <div></div>
+        <span></span>
+        <p v-for="l in 2" :key="'p' + l"></p>
+      </section>
     </div>
   </div>
 </template>
@@ -46,23 +48,25 @@ export default {
     }
   }
   &-preview {
-    padding: @gapOuter;
-    margin-bottom: calc(@gapOuter * 2);
-    div {
-      background: @skeletonColor;
-      height: 20vh;
-    }
-    span {
-      height: 1rem;
-      display: inline-block;
-      width: 6rem;
-      background: @skeletonColor;
-      margin: @gapInner 0;
-    }
-    p {
-      height: 1rem;
-      background: @skeletonColor;
-      margin-top: 0;
+    section {
+      padding: @gapOuter;
+      margin-bottom: calc(@gapOuter * 2);
+      div {
+        background: @skeletonColor;
+        height: 20vh;
+      }
+      span {
+        height: 1rem;
+        display: inline-block;
+        width: 6rem;
+        background: @skeletonColor;
+        margin: @gapInner 0;
+      }
+      p {
+        height: 1rem;
+        background: @skeletonColor;
+        margin-top: 0;
+      }
     }
   }
 }
