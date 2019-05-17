@@ -4,7 +4,7 @@
 
     <div class="timeline-item" v-for="(time, i) in Object.keys(timeline)" :key="i">
       <div class="timeline-item-date" @click="showDetail(time)">{{time}} ({{timeline[time].length}})</div>
-      <ul class="timeline-item-day" v-show="onShowTime === time || i === 0">
+      <ul class="timeline-item-day" v-show="onShowTime === time">
         <li class="article" v-for="(article, i) in timeline[time]" :key="i" @click="$emit('toArticle', article.number)">{{article.title}}</li>
       </ul>
     </div>
@@ -17,6 +17,11 @@ export default {
   data () {
     return {
       onShowTime: ''
+    }
+  },
+  watch: {
+    timeline (val) {
+      this.onShowTime = Object.keys(val)[0]
     }
   },
   methods: {
