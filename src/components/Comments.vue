@@ -1,28 +1,11 @@
 <template>
   <div class="comments">
-    <div class="comments-header">
-      <h1>Comments</h1>
-    </div>
-
     <div class="comments-auth border" v-if="!isLogin">
-      <div class="comments-auth-token input-area" v-if="authMode === 'token'">
-        <input placeholder="Github access token" v-model="token" type="text">
-        <i class="far fa-question-circle" @click="pageJump"></i>
-      </div>
-      <div class="comments-auth-account input-area" v-if="authMode === 'account'">
-        <input placeholder="Github account" v-model="account" type="text">
-        <br>
-        <input placeholder="Github password" v-model="password" type="password">
-      </div>
-      <div class="comments-auth-submit">
-        <span @click="changeAuthMode">Use Github {{authMode === 'token' ? 'account' : 'access token'}} to auth</span>
-        <button class="button" :disabled="!disableAuthBtn" @click="submitAuth">Submit</button>
-      </div>
+      <button @click="toLogin">Login with Github to comment</button>
     </div>
 
     <div class="comments-operation border" v-if="isLogin">
       <div class="comments-operation-user">
-        <i class="comments-operation-user-logout fas fa-sign-out-alt tooltip" data-tips="Logout" @click="logout"></i>
         <div class="avatar">
           <img :src="userInfo.avatar_url" alt="">
         </div>
@@ -34,11 +17,11 @@
       </div>
 
       <div class="comments-operation-button">
-        <button class="button" :disabled="!commentContent.length" @click="submitComment">Comment</button>
+        <button :disabled="!commentContent.length" @click="submitComment">Comment</button>
       </div>
     </div>
 
-    <div class="comments-list border" v-if="article.comments">
+    <div class="comments-list border" v-if="article.comments && article.comments.length">
       <div class="comments-list-item" v-for="(comment, i) in article.comments" :key="i">
         <div class="user">
           <a class="user-avatar" :href="comment.user.html_url" target="_blank">
@@ -57,7 +40,7 @@
 </template>
 
 <script>
-import { mapActions, mapMutations } from 'vuex'
+import { mapActions } from 'vuex'
 import marked from 'marked'
 import hljs from 'highlight.js'
 import swal from 'sweetalert2'
@@ -91,102 +74,55 @@ export default {
   },
   data () {
     return {
-      authMode: 'token',
       isLogin: false,
-      token: '',
-      account: '',
-      password: '',
 
       commentContent: '',
       showCommentList: false
-    }
-  },
-  computed: {
-    disableAuthBtn () {
-      let disabled = false
-      if (this.authMode === 'token') {
-        disabled = !!this.token.length
-      } else {
-        disabled = !!this.account.length && !!this.password.length
-      }
-      return disabled
     }
   },
   mounted () {
     this.checkIsLogin()
   },
   watch: {
-    userInfo (val) {
-      if (val) {
+    userInfo: {
+      deep: true,
+      handler (val) {
         this.checkIsLogin()
       }
     }
   },
   methods: {
     ...mapActions(['getUserInfo', 'getComments', 'createComment', 'deleteComment']),
-    pageJump () {
-      window.open('https://github.com/settings/tokens/new')
-    },
     checkIsLogin () {
-      if (this.userInfo.login) {
-        this.isLogin = true
-      }
+      this.isLogin = !!this.userInfo.login
     },
-    changeAuthMode () {
-      const currentMode = this.authMode
-      this.authMode = currentMode === 'token' ? 'account' : 'token'
-    },
-    async submitAuth () {
-      let token = ''
-      if (this.authMode === 'token') {
-        token = `Bearer ${this.token}`
-      } else {
-        token = `Basic ${btoa(this.account + ':' + this.password)}`
-      }
-
-      const { status, data } = await this.getUserInfo(token)
-
-      if (status === 401) {
-        swal.fire({
-          title: status,
-          text: data.message,
-          type: 'error'
-        })
-        this.token = ''
-        this.account = ''
-        this.password = ''
-      } else {
-        this.isLogin = true
-        localStorage.setItem('github_token', token)
-      }
-    },
-    logout () {
-      this.token = ''
-      this.account = ''
-      this.password = ''
-      this.isLogin = false
-      localStorage.removeItem('github_token')
+    toLogin () {
+      document.querySelector('#header-menu-btn').click()
     },
     async submitComment () {
       const commentContent = this.commentContent
       this.commentContent = ''
 
-      const { status, data } = await this.createComment({ commentsUrl: this.article.commentsUrl, comment: commentContent })
+      const { status } = await this.createComment({ commentsUrl: this.article.commentsUrl, comment: commentContent })
       if (status < 400) {
+        await this.getComments(this.article.commentsUrl)
+        const view = document.querySelector('.view')
+        view.scrollTop = view.scrollHeight
+
         swal.fire({
-          title: 'Commet sucessed!',
+          toast: true,
+          title: `Commet successed!`,
           type: 'success',
           showConfirmButton: false,
-          allowOutsideClick: false,
           timer: 2000
         })
-
-        this.getComments(this.article.commentsUrl)
       } else {
         swal.fire({
-          title: `Commet failed!\n${status}`,
-          text: data.message,
-          type: 'error'
+          toast: true,
+          title: `Commet failed!`,
+          type: 'error',
+          showConfirmButton: false,
+          timer: 2000
         })
       }
     }
@@ -195,12 +131,13 @@ export default {
 </script>
 
 <style lang="less" scoped>
+@import '../assets/style/variables.less';
+
 .comments {
-  border-top: 1px dashed #DCDFE6;
-  padding: 15px 0;
+  padding: @gapOuter 0;
 
   &-header {
-    margin-bottom: 15px;
+    margin-bottom: @gapOuter;
     h1 {
       margin: 0;
       font-weight: normal;
@@ -208,61 +145,24 @@ export default {
   }
 
   &-auth {
-    margin-bottom: 15px;
-    padding: 15px;
-    .input-area {
-      input {
-        padding: 5px 10px;
-        border: none;
-        outline: none;
-        border-bottom: 1px solid #DCDFE6;
-        margin-right: 5px;
-        width: 200px;
-        margin-bottom: 15px;
-        border-radius: 0;
-        &:focus {
-          border-bottom: 2px solid #8e24aa;
-        }
-      }
-      i {
-        color: #909399;
-        cursor: pointer;
-        font-size: 1.2rem;
-      }
-    }
-    &-submit {
-      span {
-        display: block;
-        margin-bottom: 15px;
-        color: #8e24aa;
-        cursor: pointer;
-      }
-    }
+    margin-bottom: @gapOuter;
+    padding: @gapOuter;
   }
 
   &-operation {
-    margin-bottom: 15px;
-    padding: 15px;
+    margin-bottom: @gapOuter;
+    padding: @gapOuter;
     &-user {
       display: flex;
       align-items: center;
-      margin-bottom: 15px;
-      position: relative;
-      &-logout {
-        position: absolute;
-        top: 50%;
-        right: 0;
-        color: #F56C6C;
-        font-size: 1.2rem;
-        transform: translateY(-50%);
-        cursor: pointer;
-      }
+      margin-bottom: @gapOuter;
+      color: @monorFontColor;
       .avatar {
         width: 36px;
         height: 36px;
         border-radius: 36px;
         overflow: hidden;
-        margin-right: 10px;
+        margin-right: @gapInner;
         img {
           width: 100%;
           height: 100%;
@@ -271,26 +171,27 @@ export default {
     }
     &-textarea {
       width: 100%;
-      margin-bottom: 15px;
+      margin-bottom: @gapOuter;
       textarea {
         appearance: none;
         width: 100%;
         box-sizing: border-box;
-        padding: 5px 10px;
+        padding: 5px @gapInner;
         outline: none;
         resize: none;
+        color: @primaryFontColor;
       }
     }
   }
 
   &-list {
     &-item {
-      padding: 15px;
+      padding: @gapOuter;
       padding-bottom: 0;
-      border-bottom: 1px solid #DCDFE6;
+      border-bottom: 1px solid @secondBorderColor;
       .user {
         display: flex;
-        margin-bottom: 15px;
+        margin-bottom: @gapOuter;
         position: relative;
         &-avatar {
           width: 36px;
@@ -303,7 +204,7 @@ export default {
           }
         }
         &-info {
-          margin-left: 10px;
+          margin-left: @gapInner;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
@@ -311,19 +212,11 @@ export default {
             margin: 0;
           }
           &-name {
-            color: #606266;
+            color: @monorFontColor;
           }
           &-date {
-            color: #909399;
+            color: @monorFontColor;
           }
-        }
-        &-delte {
-          position: absolute;
-          top: 0;
-          right: 0;
-          font-size: 1.2rem;
-          color: #F56C6C;
-          cursor: pointer;
         }
       }
     }

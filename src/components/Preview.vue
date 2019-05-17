@@ -18,9 +18,12 @@
     <div class="preview-content" v-html="articlePreview"></div>
 
     <div class="preview-tools">
-      <i class="far fa-thumbs-up"></i>
-      <i class="far fa-heart"></i>
-      <i class="far fa-comment-dots"></i>
+      <i class="far fa-thumbs-up" :class="{'fas praised': hasPraised.length}" @click="$emit('praise', { number: article.number, hasPraised })"></i>
+      {{article.reactions.praise.length}}
+      <i class="far fa-heart" :class="{'fas liked': hasLiked.length}" @click="$emit('like', { number: article.number, hasLiked })"></i>
+      {{article.reactions.like.length}}
+      <i class="far fa-comment-dots" @click="$emit('toComment', article.number)"></i>
+      {{article.commentsAmount}}
     </div>
   </div>
 </template>
@@ -41,11 +44,21 @@ marked.setOptions({
 })
 
 export default {
-  props: ['article'],
+  props: ['article', 'userInfo'],
   computed: {
     articlePreview () {
       const content = this.article.content.replace(/!\[.+?\]\(.+?\)/, '')
       return marked(content).match(/<p>(.*?)<\/p>/)[1]
+    },
+    hasLiked () {
+      return this.article.reactions.like.filter(({ user }) => {
+        return user.login === this.userInfo.login
+      })
+    },
+    hasPraised () {
+      return this.article.reactions.praise.filter(({ user }) => {
+        return user.login === this.userInfo.login
+      })
     }
   },
   methods: {
@@ -106,10 +119,17 @@ export default {
       padding-left: @gapOuter;
       cursor: pointer;
       font-size: 1.2rem;
+      &.praised {
+        color: @warningColor;
+      }
+      &.liked {
+        color: @dangerColor;
+      }
     }
   }
   &-content {
     padding: @gapOuter;
+    color: @regularFontColor;
   }
 }
 

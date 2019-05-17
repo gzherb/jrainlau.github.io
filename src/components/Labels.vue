@@ -68,6 +68,7 @@ export default {
     box-sizing: border-box;
     font-weight: normal;
     border-bottom: 1px solid @firstBorderColor;
+    color: @regularFontColor;
   }
   &-list {
     padding: @gapOuter;

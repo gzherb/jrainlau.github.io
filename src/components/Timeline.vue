@@ -42,6 +42,7 @@ export default {
     padding: @gapOuter;
     font-weight: normal;
     border-bottom: 1px solid @firstBorderColor;
+    color: @regularFontColor;
   }
 
   &-item {

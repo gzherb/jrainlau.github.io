@@ -3,6 +3,7 @@
     <section class="main-others">
       <Timeline :timeline="timeline" @toArticle="toArticle" />
       <Labels ref="labels" :labels="labels" @selectLabel="selectLabel" />
+      <About />
     </section>
     <div class="main-articles">
       <div class="main-articles-keyword border" v-show="keyword">
@@ -20,27 +21,33 @@
       <Preview
         v-for="(article, i) in articlesList"
         :article="article"
+        :userInfo="userInfo"
         :key="i"
-        @toArticle="toArticle" />
+        @toArticle="toArticle"
+        @like="likeArticle"
+        @praise="praiseArticle"
+        @toComment="toComment" />
+      <About class="mobile-only" />
     </div>
   </div>
 </template>
 
 <script>
-import { mapState, mapGetters, mapMutations } from 'vuex'
+import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 import Preview from '@/components/Preview'
 import Timeline from '@/components/Timeline'
 import Labels from '@/components/Labels'
+import About from '@/components/About'
 
 export default {
-  components: { Preview, Timeline, Labels },
+  components: { Preview, Timeline, Labels, About },
   data () {
     return {
       labelFilterKeyword: ''
     }
   },
   computed: {
-    ...mapState(['keyword']),
+    ...mapState(['keyword', 'userInfo']),
     ...mapGetters(['timeline', 'labels', 'articles']),
     articlesList () {
       let articles = this.articles
@@ -61,11 +68,48 @@ export default {
   },
   methods: {
     ...mapMutations(['UPDATE_KEYWORD']),
+    ...mapActions(['deleteAnReaction', 'createAnReaction']),
     toArticle (number) {
       this.$router.push('/article?number=' + number)
     },
+    toComment (number) {
+      this.$router.push('/article?number=' + number + '&comment=true')
+    },
     selectLabel (label) {
       this.labelFilterKeyword = label
+    },
+    checkLogin () {
+      let isLogin = false
+      if (!this.userInfo.login) {
+        document.querySelector('#header-menu-btn').click()
+      } else {
+        isLogin = true
+      }
+      return isLogin
+    },
+    likeArticle ({ number, hasLiked }) {
+      if (!this.checkLogin()) {
+        return false
+      }
+
+      if (hasLiked.length) {
+        const reactionId = hasLiked[0].id
+        this.deleteAnReaction({ number, id: reactionId })
+      } else {
+        this.createAnReaction({ number, content: 'heart' })
+      }
+    },
+    praiseArticle ({ number, hasPraised }) {
+      if (!this.checkLogin()) {
+        return false
+      }
+
+      if (hasPraised.length) {
+        const reactionId = hasPraised[0].id
+        this.deleteAnReaction({ number, id: reactionId })
+      } else {
+        this.createAnReaction({ number, content: '+1' })
+      }
     }
   }
 }

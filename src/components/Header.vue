@@ -15,7 +15,7 @@
         <div class="header-menu-item search">
           <input type="text" class="show-menu" placeholder="Search" v-model="keyword" @keyup.enter="search">
         </div>
-        <div class="header-menu-item" @click="$emit('update:showAuth', true)" v-show="!userInfo.login">
+        <div class="header-menu-item" id="header-menu-btn" @click="$emit('update:showAuth', true)" v-show="!userInfo.login">
           Login width Github
         </div>
         <div class="header-menu-item signout" v-show="userInfo.login" @click="signout">
@@ -168,6 +168,10 @@ header {
       text-align: center;
       &.search {
         display: block;
+        height: 45px;
+        input {
+          height: 100%;
+        }
       }
     }
   }

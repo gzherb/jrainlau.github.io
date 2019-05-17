@@ -11,9 +11,26 @@
       </section>
       <section class="article-content markdown" v-html="$options.filters.markify(article.content)"></section>
       <section class="article-comments">
+        <div class="article-comments-reactions border">
+          <i class="far fa-thumbs-up" :class="{'fas praised': hasPraised.length}" @click="praiseArticle"></i>
+          {{article.reactions.praise.length}}
+          <i class="far fa-heart" :class="{'fas liked': hasLiked.length}" @click="likeArticle"></i>
+          {{article.reactions.like.length}}
+          <div class="tools">
+            <i class="fas fa-qrcode qrcode" @click="showQR"></i>
+            <i class="far fa-copy" @click="copyUrl"></i>
+            <div class="tools-qr border" v-show="QR">
+              <img :src="QR" alt="">
+            </div>
+          </div>
+        </div>
         <Comments :article="article" :userInfo="userInfo" />
+        <About />
       </section>
     </div>
+
+    <input type="text" id="page-url" ref="pageUrl" style="position:absolute;opacity:0;top:0;z-index:-9999" :value="pageUrl">
+
   </div>
 </template>
 
@@ -22,6 +39,8 @@ import { mapState, mapActions } from 'vuex'
 import marked from 'marked'
 import hljs from 'highlight.js'
 import Comments from '@/components/Comments'
+import About from '@/components/About'
+import swal from 'sweetalert2'
 
 const renderer = new marked.Renderer()
 renderer.link = (href, title, text) => `<a target="_blank" href="${href}" title="${title}">${text}</a>`
@@ -38,10 +57,15 @@ marked.setOptions({
 })
 
 export default {
-  components: { Comments },
+  components: { Comments, About },
   filters: {
     markify (str) {
       return marked(str, { renderer })
+    }
+  },
+  data () {
+    return {
+      QR: ''
     }
   },
   computed: {
@@ -49,10 +73,31 @@ export default {
     article () {
       const queryNumber = Number(this.$route.query.number)
       return this.articles.filter(({ number }) => number === queryNumber)[0]
+    },
+    hasLiked () {
+      return this.article.reactions.like.filter(({ user }) => {
+        return user.login === this.userInfo.login
+      })
+    },
+    hasPraised () {
+      return this.article.reactions.praise.filter(({ user }) => {
+        return user.login === this.userInfo.login
+      })
+    },
+    pageUrl () {
+      return location.href
     }
   },
   mounted () {
     this.getArticleComments()
+  },
+  beforeRouteEnter (to, from, next) {
+    next(() => {
+      if (to.query.comment) {
+        const mainView = document.querySelector('.view')
+        mainView.scrollTop = mainView.scrollHeight
+      }
+    })
   },
   watch: {
     article (val) {
@@ -60,11 +105,65 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['getComments']),
+    ...mapActions(['getComments', 'deleteAnReaction', 'createAnReaction']),
     getArticleComments () {
       if (!this.article) return
       const commentsUrl = this.article.commentsUrl
       this.getComments(commentsUrl)
+    },
+    checkLogin () {
+      let isLogin = false
+      if (!this.userInfo.login) {
+        document.querySelector('#header-menu-btn').click()
+      } else {
+        isLogin = true
+      }
+      return isLogin
+    },
+    likeArticle () {
+      if (!this.checkLogin()) return
+      if (this.hasLiked.length) {
+        const reactionId = this.hasLiked[0].id
+        this.deleteAnReaction({ number: this.article.number, id: reactionId })
+      } else {
+        this.createAnReaction({ number: this.article.number, content: 'heart' })
+      }
+    },
+    praiseArticle () {
+      if (!this.checkLogin()) return
+      if (this.hasPraised.length) {
+        const reactionId = this.hasPraised[0].id
+        this.deleteAnReaction({ number: this.article.number, id: reactionId })
+      } else {
+        this.createAnReaction({ number: this.article.number, content: '+1' })
+      }
+    },
+    async showQR () {
+      const QRcode = await import('qrcode')
+      const dataUrl = await QRcode.toDataURL(this.pageUrl)
+      if (!this.QR) {
+        this.QR = dataUrl
+      } else {
+        this.QR = ''
+      }
+      const hideQr = (e) => {
+        if (!e.target.classList.contains('qrcode')) {
+          this.QR = ''
+          document.body.removeEventListener('click', hideQr)
+        }
+      }
+      document.body.addEventListener('click', hideQr)
+    },
+    copyUrl () {
+      this.$refs['pageUrl'].select()
+      document.execCommand('copy')
+      swal.fire({
+        toast: true,
+        title: `Article url has been copied to your clipboard`,
+        type: 'success',
+        showConfirmButton: false,
+        timer: 2000
+      })
     }
   }
 }
@@ -114,6 +213,44 @@ export default {
   }
   &-comments {
     width: 100%;
+    border-top: 1px dashed @secondBorderColor;
+    padding-top: calc(@gapOuter * 3);
+    margin-top: calc(@gapOuter * 3);
+    &-reactions {
+      color: @monorFontColor;
+      padding: @gapOuter;
+      font-size: 1.8rem;
+      position: relative;
+      .praised {
+        color: @warningColor;
+      }
+      .liked {
+        color: @dangerColor;
+      }
+      .tools {
+        position: absolute;
+        top: 0;
+        right: @gapOuter;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        i {
+          margin-left: @gapOuter;
+          cursor: pointer;
+        }
+        &-qr {
+          position: absolute;
+          width: 150px;
+          height: 150px;
+          top: -160px;
+          right: 0;
+          background: #fff;
+          img {
+            width: 100%;
+          }
+        }
+      }
+    }
   }
 }
 
@@ -122,6 +259,12 @@ export default {
     padding: calc(@gapOuter * 3) @gapOuter @gapOuter @gapOuter;
     &-content {
       font-size: 1.2rem;
+    }
+    .tools {
+      display: none;
+    }
+    #page-url {
+      display: none;
     }
   }
 }

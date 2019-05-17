@@ -100,6 +100,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 9999;
   &-box {
     padding: 15px;
     background: #fff;

@@ -76,7 +76,7 @@ export default new Vuex.Store({
       state.articles = articles
     },
     GET_USER_INFO (state, info) {
-      state.userInfo = info
+      Vue.set(state, 'userInfo', info)
     },
     GET_COMMENTS (state, { commentsUrl, comments }) {
       state.articles.forEach(article => {
@@ -87,6 +87,16 @@ export default new Vuex.Store({
     },
     UPDATE_KEYWORD (state, keyword) {
       state.keyword = keyword
+    },
+    UPDATE_REACTIONS (state, { reactions, number }) {
+      state.articles.forEach(article => {
+        if (article.number === number) {
+          Vue.set(article, 'reactions', {
+            like: reactions.filter(re => re.content === 'heart'),
+            praise: reactions.filter(re => re.content === '+1')
+          })
+        }
+      })
     }
   },
   actions: {
@@ -95,8 +105,13 @@ export default new Vuex.Store({
         url: `${REPO_URL}/issues?filter=created`
       }).catch(e => e)
       if (status < 400) {
-        const articles = data.map(issue => {
+        const articles = await Promise.all(data.map(async issue => {
           const cover = issue.body.match(/!\[.+?\]\((.+?[^)]*)\)/)
+
+          const { data: reactions } = await dispatch('getReactions', {
+            number: issue.number,
+            autoCommit: false
+          })
 
           const article = {
             title: issue.title,
@@ -105,10 +120,15 @@ export default new Vuex.Store({
             number: issue.number,
             date: new Date(issue.created_at).toLocaleDateString('zh').replace(/\//g, '-'),
             labels: issue.labels,
-            commentsUrl: issue.comments_url
+            commentsUrl: issue.comments_url,
+            commentsAmount: issue.comments,
+            reactions: {
+              like: reactions.filter(re => re.content === 'heart'),
+              praise: reactions.filter(re => re.content === '+1')
+            }
           }
-          return article
-        })
+          return Promise.resolve(article)
+        }))
         commit('GET_ARTICLES', articles)
         return true
       } else {
@@ -144,12 +164,45 @@ export default new Vuex.Store({
         method: 'post',
         data: {
           body: comment
-        },
-        headers: {
-          'Authorization': localStorage.getItem('github_token')
         }
       })
       return result
+    },
+    async getReactions ({ commit }, { number, autoCommit }) {
+      const result = await $fetch({
+        url: `${REPO_URL}/issues/${number}/reactions`,
+        headers: {
+          'Accept': 'application/vnd.github.squirrel-girl-preview+json'
+        }
+      }).catch(e => e)
+      autoCommit && commit('UPDATE_REACTIONS', {
+        reactions: result.data,
+        number
+      })
+      return result
+    },
+    async createAnReaction ({ dispatch }, { number, content }) {
+      await $fetch({
+        method: 'post',
+        url: `${REPO_URL}/issues/${number}/reactions`,
+        data: {
+          content
+        },
+        headers: {
+          'Accept': 'application/vnd.github.squirrel-girl-preview+json'
+        }
+      }).catch(e => e)
+      dispatch('getReactions', { number, autoCommit: true })
+    },
+    async deleteAnReaction ({ dispatch }, { number, id }) {
+      await $fetch({
+        method: 'delete',
+        url: `${API_DOMAIN}/reactions/${id}`,
+        headers: {
+          'Accept': 'application/vnd.github.squirrel-girl-preview+json'
+        }
+      }).catch(e => e)
+      dispatch('getReactions', { number, autoCommit: true })
     }
   }
 })

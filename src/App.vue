@@ -8,14 +8,12 @@
     <main>
       <router-view></router-view>
     </main>
-    <About :showAbout.sync="showAbout" />
     <Auth :showAuth.sync="showAuth" />
   </div>
 </template>
 
 <script>
 import Header from '@/components/Header'
-import About from '@/components/About'
 import Auth from '@/components/Auth'
 import { mapState, mapActions, mapMutations } from 'vuex'
 import swal from 'sweetalert2'
@@ -23,7 +21,6 @@ import swal from 'sweetalert2'
 export default {
   data () {
     return {
-      showAbout: false,
       showAuth: false
     }
   },
@@ -32,7 +29,6 @@ export default {
   },
   components: {
     Header,
-    About,
     Auth
   },
   async created () {

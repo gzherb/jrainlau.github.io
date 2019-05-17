@@ -22,7 +22,8 @@ body {
   width: 100%;
   height: 100%;
   height: calc(100% - 60px);
-  overflow: scroll;
+  overflow-y: scroll;
+  overflow-x: hidden;
   position: relative;
 }
 
@@ -68,10 +69,20 @@ button {
     color: #fff;
   }
   &[disabled] {
-    color: #c158dc;
+    color: #a170ad;
     background-color: #f3e5f5;
     border-color: #f3e5f5;
     cursor: not-allowed;
+  }
+}
+
+.mobile-only {
+  display: none;
+}
+
+@media only screen and (max-width: 768px) {
+  .mobile-only {
+    display: block;
   }
 }
 
