@@ -46,6 +46,7 @@ import swal from 'sweetalert2'
 
 const renderer = new marked.Renderer()
 renderer.link = (href, title, text) => `<a target="_blank" href="${href}" title="${title}">${text}</a>`
+renderer.image = (href, title, text) => `<a target="_blank" href="${href}" title="${title}"><image src="${href}" /></a>`
 
 marked.setOptions({
   highlight: function (code, lang) {
@@ -256,7 +257,7 @@ export default {
   }
 }
 
-@media only screen and (max-width: 450px) {
+@media only screen and (max-width: 768px) {
   .article {
     padding: calc(@gapOuter * 3) @gapOuter @gapOuter @gapOuter;
     &-content {
