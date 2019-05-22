@@ -61,6 +61,9 @@ export default {
       return articles
     }
   },
+  mounted () {
+    document.title = 'JRAIN:BLOG'
+  },
   watch: {
     keyword (val) {
       if (val) {

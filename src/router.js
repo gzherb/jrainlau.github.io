@@ -22,7 +22,7 @@ const router = new Router({
 
 router.afterEach((to, from) => {
   const mainView = document.querySelector('main')
-  document.title = to.name ? `JRAIN:BLOG | ${to.name}` : `JRAIN:BLOG`
+  // document.title = to.name ? `JRAIN:BLOG | ${to.name}` : `JRAIN:BLOG`
   if (mainView) {
     mainView.scroll(0, 0)
   }

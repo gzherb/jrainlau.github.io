@@ -92,6 +92,7 @@ export default {
     }
   },
   mounted () {
+    document.title = this.article.title + ' | JRAIN:BLOG'
     this.getArticleComments()
   },
   beforeRouteEnter (to, from, next) {
